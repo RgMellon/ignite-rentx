@@ -2,6 +2,7 @@ import React from "react";
 
 import * as S from "./styles";
 import GasolineSvg from "../../assets/gasoline.svg";
+import { RectButtonProps } from "react-native-gesture-handler";
 
 type CarData = {
   brand: string;
@@ -15,11 +16,11 @@ type CarData = {
 
 type CarProps = {
   data: CarData;
-};
+} & RectButtonProps;
 
-export function Car({ data }: CarProps) {
+export function Car({ data, ...rest }: CarProps) {
   return (
-    <S.Container>
+    <S.Container {...rest}>
       <S.Details>
         <S.Brand>{data.brand}</S.Brand>
 
