@@ -4,7 +4,7 @@ import * as S from "./styles";
 import GasolineSvg from "../../assets/gasoline.svg";
 import { RectButtonProps } from "react-native-gesture-handler";
 
-type CarData = {
+export type CarData = {
   brand: string;
   name: string;
   rent: {
