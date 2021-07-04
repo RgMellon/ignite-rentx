@@ -35,19 +35,8 @@ export function Home() {
     getCars();
   }, []);
 
-  const carData = {
-    brand: "audi",
-    name: "RS Coupé",
-    rent: {
-      period: "Ao dia",
-      price: 120,
-    },
-    thumbnail:
-      "https://production.autoforce.com/uploads/version/profile_image/5049/comprar-s-tronic_c680a07894.png",
-  };
-
-  function handleCardDetails() {
-    navigation.navigate("CarDetails");
+  function handleCardDetails(car: CarDTO) {
+    navigation.navigate("CarDetails", { car });
   }
 
   return (
@@ -73,7 +62,12 @@ export function Home() {
           keyExtractor={(item) => String(item.id)}
           data={cars}
           renderItem={({ item }) => (
-            <Car data={item} onPress={handleCardDetails} />
+            <Car
+              data={item}
+              onPress={() => {
+                handleCardDetails(item);
+              }}
+            />
           )}
         />
       )}
