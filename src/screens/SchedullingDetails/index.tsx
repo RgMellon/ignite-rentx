@@ -50,6 +50,11 @@ export function SchedullingDetails() {
         ...dates,
       ];
 
+      await api.post("schedules_byuser", {
+        car,
+        user_id: 10,
+      });
+
       const response = await api.put(`schedules_bycars/${car.id}`, {
         id: car.id,
         unavailable_dates,
