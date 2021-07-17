@@ -1,4 +1,5 @@
 import { TextInput } from "react-native";
+import { BorderlessButton } from "react-native-gesture-handler";
 import styled, { css } from "styled-components/native";
 
 type ContainerProps = {
@@ -8,6 +9,7 @@ type ContainerProps = {
 export const Container = styled.View<ContainerProps>`
   ${({ isFocused, theme }) => css`
     flex-direction: row;
+    margin-top: 8px;
 
     ${isFocused &&
     css`
@@ -35,6 +37,17 @@ export const InputText = styled(TextInput)`
     color: ${theme.colors.text};
     font-family: ${theme.fonts.primary_400};
     padding: 0 23px;
+    background-color: ${theme.colors.background_secondary};
+  `}
+`;
+
+export const ChangePasswordVisibilityButton = styled(BorderlessButton)`
+  ${({ theme }) => css`
+    width: 56px;
+    height: 56px;
+
+    justify-content: center;
+    align-items: center;
     background-color: ${theme.colors.background_secondary};
   `}
 `;

@@ -10,11 +10,17 @@ type InputProps = {
 
 import * as S from "./styles";
 
-export function Input({ iconName, value, ...rest }: InputProps) {
+export function PasswordInput({ iconName, value, ...rest }: InputProps) {
   const theme = useTheme();
+
+  const [isPasswordVisible, setIsPasswordVisible] = useState(true);
 
   const [isFilled, setIsFilled] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  function handleChangePasswordVisibility() {
+    setIsPasswordVisible((prevState) => !prevState);
+  }
 
   function handleInputFocused() {
     setIsFocused(true);
@@ -41,7 +47,20 @@ export function Input({ iconName, value, ...rest }: InputProps) {
         onFocus={handleInputFocused}
         onBlur={handleInputBlur}
         {...rest}
+        secureTextEntry={isPasswordVisible}
       />
+
+      <S.ChangePasswordVisibilityButton
+        onPress={handleChangePasswordVisibility}
+      >
+        <Feather
+          name={isPasswordVisible ? "eye" : "eye-off"}
+          size={24}
+          color={
+            isFocused || isFilled ? theme.colors.main : theme.colors.text_detail
+          }
+        />
+      </S.ChangePasswordVisibilityButton>
     </S.Container>
   );
 }
