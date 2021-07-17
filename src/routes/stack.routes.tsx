@@ -15,7 +15,13 @@ export function StackRoutes() {
   return (
     <Stack.Navigator headerMode="none">
       <Stack.Screen name="Splash" component={Splash} />
-      <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen
+        name="Home"
+        component={Home}
+        options={{
+          gestureEnabled: false,
+        }}
+      />
       <Stack.Screen name="CarDetails" component={CarDetails} />
       <Stack.Screen name="Scheduling" component={Scheduling} />
       <Stack.Screen name="SchedullingDetails" component={SchedullingDetails} />
