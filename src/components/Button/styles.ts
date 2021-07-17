@@ -17,13 +17,17 @@ export const Container = styled(RectButton)<ButtonProps>`
     justify-content: center;
 
     background-color: ${color};
+    margin-bottom: 8px;
   `}
 `;
 
-export const Title = styled.Text`
-  ${({ theme }) => css`
+type ButtonTextProps = {
+  light: boolean;
+};
+export const Title = styled.Text<ButtonTextProps>`
+  ${({ theme, light }) => css`
     font-family: ${({ theme }) => theme.fonts.primary_500};
     font-size: ${RFValue(15)}px;
-    color: ${theme.colors.shape};
+    color: ${light ? theme.colors.header : theme.colors.shape};
   `}
 `;
