@@ -11,6 +11,7 @@ import { Bullet } from "../../../components/Bullet";
 import { Button } from "../../../components/Button";
 import { BackButton } from "../../../components/Car/BackButton";
 import { PasswordInput } from "../../../components/PasswordInput";
+import api from "../../../services/api";
 import { Confirmation } from "../../Confirmation";
 
 import * as S from "./styles";
@@ -37,7 +38,7 @@ export function SecondStep() {
     navigation.goBack();
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!password || !passwordConfirm) {
       return Alert.alert("Informe a senha e a confirmação");
     }
@@ -46,11 +47,23 @@ export function SecondStep() {
       return Alert.alert("Senhas não são iguais");
     }
 
-    navigation.navigate("Confirmation", {
-      title: "Conta criada",
-      message: `Agora é só fazer login\ne aproveitar`,
-      nextScreenRoute: "SignIn",
-    });
+    await api
+      .post("/users", {
+        name: user.email,
+        email: user.email,
+        password,
+        driver_license: user.driverLicense,
+      })
+      .then(() => {
+        navigation.navigate("Confirmation", {
+          title: "Conta criada",
+          message: `Agora é só fazer login\ne aproveitar`,
+          nextScreenRoute: "SignIn",
+        });
+      })
+      .catch(() => {
+        Alert.alert("Não foi possível cadastrar");
+      });
   }
 
   return (
