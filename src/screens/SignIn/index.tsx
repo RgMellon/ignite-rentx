@@ -16,8 +16,11 @@ import theme from "../../styles/theme";
 
 import * as S from "./style";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../../hooks/auth";
 
 export function SignIn() {
+  const { signIn } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
@@ -34,7 +37,7 @@ export function SignIn() {
 
       await schema.validate({ email, password });
 
-      Alert.alert("foi");
+      signIn({ email, password });
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         Alert.alert("Opa", err.message);
