@@ -10,8 +10,8 @@ import { useTheme } from "styled-components";
 import { Bullet } from "../../../components/Bullet";
 import { Button } from "../../../components/Button";
 import { BackButton } from "../../../components/Car/BackButton";
-import { Input } from "../../../components/Input";
 import { PasswordInput } from "../../../components/PasswordInput";
+import { Confirmation } from "../../Confirmation";
 
 import * as S from "./styles";
 
@@ -45,6 +45,12 @@ export function SecondStep() {
     if (passwordConfirm != password) {
       return Alert.alert("Senhas não são iguais");
     }
+
+    navigation.navigate("Confirmation", {
+      title: "Conta criada",
+      message: `Agora é só fazer login\ne aproveitar`,
+      nextScreenRoute: "SignIn",
+    });
   }
 
   return (

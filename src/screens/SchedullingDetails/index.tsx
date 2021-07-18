@@ -60,7 +60,11 @@ export function SchedullingDetails() {
         unavailable_dates,
       });
 
-      navigation.navigate("SchedulingComplete");
+      navigation.navigate("Confirmation", {
+        title: "Carro alugado",
+        message: `Agora você só precisa ir\naté a concessonaria RENTX\n pegar o seu automovel`,
+        nextScreenRoute: "Home",
+      });
     } catch (err) {
       Alert.alert("Não foi possivel confirmar o agendamento");
     }
