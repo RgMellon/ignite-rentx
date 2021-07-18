@@ -8,6 +8,7 @@ type Props = {
 export const Container = styled.View`
   ${({ theme }) => css`
     flex-direction: row;
+    margin-bottom: 8px;
   `}
 `;
 
