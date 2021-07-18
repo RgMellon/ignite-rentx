@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+import * as Yup from "yup";
+
 import {
   Alert,
   StatusBar,
@@ -13,10 +15,38 @@ import { PasswordInput } from "../../components/PasswordInput";
 import theme from "../../styles/theme";
 
 import * as S from "./style";
+import { useNavigation } from "@react-navigation/native";
 
 export function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigation = useNavigation();
+
+  async function handleSignIn() {
+    try {
+      const schema = Yup.object().shape({
+        email: Yup.string()
+          .required("E-mail obrigatório")
+          .email("Digite um e-mail válido"),
+
+        password: Yup.string().required("Senha obrigatória"),
+      });
+
+      await schema.validate({ email, password });
+
+      Alert.alert("foi");
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        Alert.alert("Opa", err.message);
+      } else {
+        Alert.alert("Erro na autenticação", "Ocorreu um erro ao fazer login");
+      }
+    }
+  }
+
+  function handleNavigateSignUp() {
+    navigation.navigate("FirstStep");
+  }
 
   return (
     <KeyboardAvoidingView behavior="position" enabled>
@@ -57,10 +87,10 @@ export function SignIn() {
 
           <S.Footer>
             <Button
-              enabled={false}
+              enabled
               loading={false}
               title="Login"
-              onPress={() => {}}
+              onPress={handleSignIn}
             />
 
             <Button
@@ -68,7 +98,7 @@ export function SignIn() {
               // loading={false}
               title="Criar conta gratuita"
               color={theme.colors.background_secondary}
-              onPress={() => Alert.alert("oi")}
+              onPress={handleNavigateSignUp}
               light
             />
           </S.Footer>
