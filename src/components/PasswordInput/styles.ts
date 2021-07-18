@@ -10,6 +10,7 @@ export const Container = styled.View`
   ${({ theme }) => css`
     flex-direction: row;
     margin-top: 8px;
+    margin-bottom: 8px;
   `}
 `;
 
