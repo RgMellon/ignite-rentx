@@ -34,16 +34,20 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [data, setData] = useState<AuthState>({} as AuthState);
 
   async function signIn({ email, password }: SignInCredentials) {
-    const response = await api.post("sessions", {
-      email,
-      password,
-    });
+    try {
+      const response = await api.post("sessions", {
+        email,
+        password,
+      });
 
-    const { user, token } = response.data;
+      const { user, token } = response.data;
 
-    api.defaults.headers.authorization = `Bearer ${token}`;
+      api.defaults.headers.authorization = `Bearer ${token}`;
 
-    setData({ token, user });
+      setData({ token, user });
+    } catch (err) {
+      console.log(err.response.data);
+    }
   }
 
   return (
