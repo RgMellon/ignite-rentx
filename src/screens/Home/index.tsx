@@ -60,27 +60,37 @@ export function Home() {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
-  async function getCars() {
-    try {
-      const response = await api.get("/cars");
-      const { data } = response;
-      setCars(data);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    console.log("oi");
+    let isMounted = true;
+    async function getCars() {
+      try {
+        const response = await api.get("/cars");
+        const { data } = response;
+        if (isMounted) {
+          setCars(data);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
-  }
 
-  useEffect(() => {
     getCars();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  useEffect(() => {
-    BackHandler.addEventListener("hardwareBackPress", () => {
-      return true;
-    });
-  }, []);
+  // useEffect(() => {
+  //   BackHandler.addEventListener("hardwareBackPress", () => {
+  //     return true;
+  //   });
+  // }, []);
 
   function handleCardDetails(car: CarDTO) {
     navigation.navigate("CarDetails", { car });
