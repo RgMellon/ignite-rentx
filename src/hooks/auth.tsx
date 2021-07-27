@@ -3,6 +3,7 @@ import api from "../services/api";
 
 import { database } from "../database";
 import { User as ModelUser } from "../database/model/User";
+import { catch } from "../../metro.config";
 
 type User = {
   id: string;
@@ -22,6 +23,8 @@ type SignInCredentials = {
 type AuthContextData = {
   user: User;
   signIn(credentials: SignInCredentials): Promise<void>;
+  signOut(): Promise<void>;
+  updateUser(user: User): Promise<void>
 };
 
 type AuthProviderProps = {
@@ -39,7 +42,7 @@ function AuthProvider({ children }: AuthProviderProps) {
 
       if (response.length > 0) {
         //modificar para 0
-        const userData = (response[1]._raw as unknown) as User;
+        const userData = (response[0]._raw as unknown) as User;
 
         api.defaults.headers.authorization = `Bearer ${userData.token}`;
         setData(userData);
@@ -78,11 +81,48 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function signOut() {
+    try {
+      const userCollection = database.get<ModelUser>("users");
+
+      await database.write(async () => {
+        const userSelected = await userCollection.find(data.id);
+        await userSelected.destroyPermanently();
+      });
+
+      setData({} as User);
+    } catch (err) {
+      console.log(err);
+      throw new Error(err);
+    }
+  }
+
+  async function updateUser(user: User) { 
+    try {
+      const userCollection = database.get<ModelUser>('users');
+      await database.write(async () => {
+        const userSelected = await userCollection.find(data.id);
+        await userSelected.update((userData) => {
+          userData.name = user.name,
+          userData.driver_license = user.driver_license,
+          userData.avatar = user.avatar
+        })
+      })
+
+      setData(user)
+    } catch (err) {
+      throw new Error(err)
+    }
+  }
+  
+
   return (
     <AuthContext.Provider
       value={{
         user: data,
         signIn,
+        signOut,
+        updateUser
       }}
     >
       {children}

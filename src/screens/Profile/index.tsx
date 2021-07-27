@@ -3,6 +3,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
+  Alert,
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -20,12 +21,15 @@ import * as S from "./styles";
 import { Input } from "../../components/Input";
 import { PasswordInput } from "../../components/PasswordInput";
 import { useAuth } from "../../hooks/auth";
+import { Button } from "../../components/Button";
+
+import * as Yup from "yup";
 
 export function Profile() {
   const theme = useTheme();
   const navigation = useNavigation();
 
-  const { user } = useAuth();
+  const { user, signOut, updateUser } = useAuth();
 
   const [option, setOption] = useState<"data" | "password">("data");
   const [avatar, setAvatar] = useState(user.avatar);
@@ -60,6 +64,47 @@ export function Profile() {
     }
   }
 
+  async function handleProfileUpdate() {
+    try {
+      const schema = Yup.object().shape({
+        driverLicense: Yup.string().required("CNH é obrigatório"),
+        name: Yup.string().required("Nome é obrigatório"),
+      });
+
+      const data = { name, driverLicense };
+      await schema.validate(data);
+
+      await updateUser({
+        id: user.id,
+        user_id: user.user_id,
+        email: user.email,
+        name,
+        driver_license: driverLicense,
+        avatar,
+        token: user.token,
+      });
+
+      Alert.alert("Perfil atualizado");
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        Alert.alert("Opa", err.message);
+      }
+      console.log(err);
+      Alert.alert("Não foi possivel atualizar o perfil");
+    }
+  }
+
+  function handleSignout() {
+    Alert.alert(
+      "Tem certeza?",
+      "Se você sair irá precisar de internet para conectar novamente",
+      [
+        { text: "Cancelar", onPress: () => {} },
+        { text: "Sair", onPress: () => signOut() },
+      ]
+    );
+  }
+
   return (
     <KeyboardAvoidingView behavior="position" enabled>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -68,7 +113,7 @@ export function Profile() {
             <S.HeaderTop>
               <BackButton onPress={handleBack} color={theme.colors.shape} />
               <S.HeaderTitle>Editar perfil</S.HeaderTitle>
-              <S.LogoutButton>
+              <S.LogoutButton onPress={handleSignout}>
                 <Feather name="power" size={24} color={theme.colors.shape} />
               </S.LogoutButton>
             </S.HeaderTop>
@@ -155,6 +200,11 @@ export function Profile() {
                 />
               </S.Section>
             )}
+            <Button
+              title="Salva alterações"
+              onPress={handleProfileUpdate}
+              style={{ marginTop: -50 }}
+            />
           </S.Content>
         </S.Container>
       </TouchableWithoutFeedback>
