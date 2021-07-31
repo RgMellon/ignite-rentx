@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
@@ -16,18 +16,27 @@ import { ImageSlider } from "../../components/ImageSlider";
 
 import * as S from "./styles";
 import { Button } from "../../components/Button";
-import { CarDTO } from "../../dtos/CarDTO";
+
 import { getAccessoryIcon } from "../../utils/getAccessoryIcon";
 import { getStatusBarHeight } from "react-native-iphone-x-helper";
+
+import { Car as ModelCar } from "../../database/model/Car";
+import { CarDTO } from "../../dtos/CarDTO";
+
 import theme from "../../styles/theme";
+import api from "../../services/api";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 type Params = {
-  car: CarDTO;
+  car: ModelCar;
 };
 
 export function CarDetails() {
+  const [carUpdated, setCarUpdated] = useState<CarDTO>({} as CarDTO);
+
   const navigation = useNavigation();
   const route = useRoute();
+  const netInfo = useNetInfo();
 
   const scrollY = useSharedValue(0);
 
@@ -64,6 +73,18 @@ export function CarDetails() {
     navigation.goBack();
   }
 
+  useEffect(() => {
+    async function fetchCarUpdated() {
+      const response = await api.get(`/cars/${car.id}`);
+
+      setCarUpdated(response.data);
+    }
+
+    if (netInfo.isConnected === true) {
+      fetchCarUpdated();
+    }
+  }, [netInfo.isConnected]);
+
   return (
     <S.Container>
       <StatusBar
@@ -85,7 +106,13 @@ export function CarDetails() {
 
         <Animated.View style={sliderCarsStyleAnimation}>
           <S.CarImages>
-            <ImageSlider imagesUrl={car.photos} />
+            <ImageSlider
+              imagesUrl={
+                !!carUpdated.photos
+                  ? carUpdated.photos
+                  : [{ id: car.thumbnail, photo: car.thumbnail }]
+              }
+            />
           </S.CarImages>
         </Animated.View>
       </Animated.View>
@@ -108,28 +135,41 @@ export function CarDetails() {
 
           <S.Rent>
             <S.Period>{car.period}</S.Period>
-            <S.Price>R$ {car.price}</S.Price>
+
+            <S.Price>
+              R$
+              {netInfo.isConnected === true ? car.price : "..."}
+            </S.Price>
           </S.Rent>
         </S.Details>
 
-        <S.Acessories>
-          {car.accessories.map((accessory) => (
-            <Acessory
-              key={accessory.type}
-              name={accessory.name}
-              icon={getAccessoryIcon(accessory.type)}
-            />
-          ))}
-        </S.Acessories>
-        <S.About>{car.about}</S.About>
-        <S.About>{car.about}</S.About>
-        <S.About>{car.about}</S.About>
-        <S.About>{car.about}</S.About>
+        {carUpdated.accessories && (
+          <S.Acessories>
+            {carUpdated.accessories.map((accessory) => (
+              <Acessory
+                key={accessory.type}
+                name={accessory.name}
+                icon={getAccessoryIcon(accessory.type)}
+              />
+            ))}
+          </S.Acessories>
+        )}
+
         <S.About>{car.about}</S.About>
       </Animated.ScrollView>
 
       <S.Footer>
-        <Button title="Confirmar" onPress={handleConfirmRental} />
+        <Button
+          title="Escolher o periodo de alugel"
+          onPress={handleConfirmRental}
+          enabled={netInfo.isConnected === true}
+        />
+
+        {netInfo.isConnected === false && (
+          <S.OfflineInfo>
+            Conecte-se a internet para ver mais detalhes
+          </S.OfflineInfo>
+        )}
       </S.Footer>
     </S.Container>
   );
@@ -141,8 +181,4 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     zIndex: 1,
   },
-
-  // back: {
-  //   marginTop: 24,
-  // },
 });

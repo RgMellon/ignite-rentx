@@ -7,7 +7,7 @@ type OptionProps = {
   active: boolean;
 };
 
-export const Container = styled.View`
+export const Container = styled.ScrollView`
   ${({ theme }) => css`
     background-color: ${theme.colors.background_primary};
   `}

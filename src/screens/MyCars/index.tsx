@@ -30,9 +30,9 @@ export function MyCars() {
       try {
         const response = await api.get("/schedules_byuser?user_id=10");
         setCars(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       } finally {
         setLoading(false);
       }

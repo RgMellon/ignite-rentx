@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { RectButton, PanGestureHandler } from "react-native-gesture-handler";
 
+import { useNetInfo } from "@react-native-community/netinfo";
+import { synchronize } from "@nozbe/watermelondb/sync";
+
+import { database } from "../../database";
+
 import { useNavigation } from "@react-navigation/native";
-import { StatusBar, StyleSheet, BackHandler } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 
 import Animated, {
@@ -11,6 +16,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+
 const ButtonAnimated = Animated.createAnimatedComponent(RectButton);
 
 import { Ionicons } from "@expo/vector-icons";
@@ -18,16 +24,17 @@ import { Ionicons } from "@expo/vector-icons";
 import Logo from "../../assets/logo.svg";
 
 import { Car } from "../../components/Car";
+import { Car as ModelCar } from "../../database/model/Car";
 
 import * as S from "./styles";
-
-import { CarDTO } from "../../dtos/CarDTO";
 
 import api from "../../services/api";
 import { Load } from "../../components/Load";
 import { useTheme } from "styled-components";
 
 export function Home() {
+  const netInfo = useNetInfo();
+
   const positionY = useSharedValue(0);
   const positionX = useSharedValue(0);
 
@@ -56,22 +63,46 @@ export function Home() {
   });
 
   const theme = useTheme();
-  const [cars, setCars] = useState<CarDTO[]>([]);
+  const [cars, setCars] = useState<ModelCar[]>([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
+  async function offlineSynchonize() {
+    await synchronize({
+      database,
+      pullChanges: async ({ lastPulledAt }) => {
+        const { data } = await api.get(
+          `cars/sync/pull?lastPulledVersion=${lastPulledAt || 0}`
+        );
+
+        const { changes, latestVersion } = data;
+
+        console.log(changes);
+
+        return { changes, timestamp: latestVersion };
+      },
+
+      pushChanges: async ({ changes }) => {
+        const user = changes.users;
+
+        await api.post("/users/sync", user).catch((err) => err.response);
+      },
+    });
+  }
+
   useEffect(() => {
-    console.log("oi");
     let isMounted = true;
     async function getCars() {
       try {
-        const response = await api.get("/cars");
-        const { data } = response;
+        const carCollection = database.get<ModelCar>("cars");
+        const cars = await carCollection.query().fetch();
+
         if (isMounted) {
-          setCars(data);
+          setCars(cars);
         }
       } catch (err) {
-        console.log(err);
+        alert("err");
+        // console.log(err);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -86,13 +117,13 @@ export function Home() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   BackHandler.addEventListener("hardwareBackPress", () => {
-  //     return true;
-  //   });
-  // }, []);
+  useEffect(() => {
+    if (netInfo.isConnected === true) {
+      offlineSynchonize();
+    }
+  }, [netInfo.isConnected]);
 
-  function handleCardDetails(car: CarDTO) {
+  function handleCardDetails(car: ModelCar) {
     navigation.navigate("CarDetails", { car });
   }
 

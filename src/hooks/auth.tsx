@@ -3,7 +3,6 @@ import api from "../services/api";
 
 import { database } from "../database";
 import { User as ModelUser } from "../database/model/User";
-import { catch } from "../../metro.config";
 
 type User = {
   id: string;
@@ -24,7 +23,8 @@ type AuthContextData = {
   user: User;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): Promise<void>;
-  updateUser(user: User): Promise<void>
+  updateUser(user: User): Promise<void>;
+  loading: boolean;
 };
 
 type AuthProviderProps = {
@@ -34,6 +34,9 @@ type AuthProviderProps = {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 function AuthProvider({ children }: AuthProviderProps) {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<User>({} as User);
+
   useEffect(() => {
     async function loadUserData() {
       const userCollection = database.get<ModelUser>("users");
@@ -41,18 +44,16 @@ function AuthProvider({ children }: AuthProviderProps) {
       const response = await userCollection.query().fetch();
 
       if (response.length > 0) {
-        //modificar para 0
         const userData = (response[0]._raw as unknown) as User;
 
         api.defaults.headers.authorization = `Bearer ${userData.token}`;
         setData(userData);
+        setLoading(false);
       }
     }
 
     loadUserData();
   }, []);
-
-  const [data, setData] = useState<User>({} as User);
 
   async function signIn({ email, password }: SignInCredentials) {
     try {
@@ -76,7 +77,7 @@ function AuthProvider({ children }: AuthProviderProps) {
 
       setData({ ...user, token });
     } catch (err) {
-      console.log(err.response);
+      // console.log(err.response);
       throw new Error(err);
     }
   }
@@ -92,29 +93,29 @@ function AuthProvider({ children }: AuthProviderProps) {
 
       setData({} as User);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       throw new Error(err);
     }
   }
 
-  async function updateUser(user: User) { 
+  async function updateUser(user: User) {
     try {
-      const userCollection = database.get<ModelUser>('users');
+      const userCollection = database.get<ModelUser>("users");
+
       await database.write(async () => {
         const userSelected = await userCollection.find(data.id);
         await userSelected.update((userData) => {
-          userData.name = user.name,
-          userData.driver_license = user.driver_license,
-          userData.avatar = user.avatar
-        })
-      })
+          (userData.name = user.name),
+            (userData.driver_license = user.driver_license),
+            (userData.avatar = user.avatar);
+        });
+      });
 
-      setData(user)
+      setData(user);
     } catch (err) {
-      throw new Error(err)
+      throw new Error(err);
     }
   }
-  
 
   return (
     <AuthContext.Provider
@@ -122,7 +123,8 @@ function AuthProvider({ children }: AuthProviderProps) {
         user: data,
         signIn,
         signOut,
-        updateUser
+        updateUser,
+        loading,
       }}
     >
       {children}

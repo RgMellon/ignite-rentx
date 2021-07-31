@@ -25,16 +25,19 @@ import { Button } from "../../components/Button";
 
 import * as Yup from "yup";
 
+import { useNetInfo } from "@react-native-community/netinfo";
+
 export function Profile() {
   const theme = useTheme();
   const navigation = useNavigation();
+  const netInfo = useNetInfo();
 
   const { user, signOut, updateUser } = useAuth();
 
   const [option, setOption] = useState<"data" | "password">("data");
   const [avatar, setAvatar] = useState(user.avatar);
   const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
+
   const [driverLicense, setDriverLicense] = useState(user.driver_license);
 
   function handleBack() {
@@ -42,6 +45,11 @@ export function Profile() {
   }
 
   function handleOptionChange(optionSelected: "data" | "password") {
+    if (netInfo.isConnected === false && optionSelected === "password") {
+      Alert.alert("fique online antes");
+      return;
+    }
+
     setOption(optionSelected);
   }
 
@@ -201,7 +209,7 @@ export function Profile() {
               </S.Section>
             )}
             <Button
-              title="Salva alterações"
+              title="Salvar alterações"
               onPress={handleProfileUpdate}
               style={{ marginTop: -50 }}
             />

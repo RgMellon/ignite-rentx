@@ -6,11 +6,14 @@ import { AppTabRoutes } from "../routes/app.tab.routes";
 import { AuthRoutes } from "./auth.routes";
 
 import { useAuth } from "../hooks/auth";
+import { ActivityIndicator } from "react-native";
 
 export function Routes() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
-  return (
+  return loading ? (
+    <ActivityIndicator />
+  ) : (
     <NavigationContainer>
       {user?.id ? <AppTabRoutes /> : <AuthRoutes />}
     </NavigationContainer>
